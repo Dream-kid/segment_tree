@@ -1,0 +1,82 @@
+#include<bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+#define inf 1000000010000
+#define mod1 1000000007
+ll tree[100010*3];
+ll lazy[100010*3];
+ll arr[100010*3];
+void merge(ll node)
+{
+    tree[node]=max(tree[2*node],tree[2*node+1]);
+}
+void init(ll node,ll l,ll r)
+{
+    if(l==r)
+    {
+        tree[node]=arr[l];
+        return;
+    }
+    init(2*node,l,(l+r)/2);
+    init(2*node+1,(l+r)/2+1,r);
+    merge(node);
+}
+void push_down(ll node)
+{
+    tree[2*node]=lazy[node];
+    tree[2*node+1]=lazy[node];
+    lazy[2*node]=lazy[node];
+    lazy[2*node+1]=lazy[node];
+    lazy[node]=0;
+}
+void update(ll node,ll l,ll r,ll p,ll q,ll val)
+{
+    if(r<p||q<l)
+        return;
+    if(l>=p&&r<=q)
+    {
+        tree[node]=val;
+        lazy[node]=val;
+        return;
+    }
+    if(lazy[node])
+        push_down(node);
+    update(2*node,l,(l+r)/2,p,q,val);
+    update(2*node+1,(l+r)/2+1,r,p,q,val);
+    merge(node);
+}
+ll query(ll node,ll l,ll r,ll p,ll q)
+{
+    if(r<p||q<l)
+        return -1000;
+    if(l>=p&&r<=q)
+    {
+        //cout<<l<<" "<<r<<" "<<node<<endl;
+        return tree[node];
+    }
+    if(lazy[node])
+        push_down(node);
+    return max(query(2*node,l,(l+r)/2,p,q),
+               query(2*node+1,(l+r)/2+1,r,p,q));
+}
+int main()
+{
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    ll total,cnt;
+    cin>>total;
+    for(ll i=1; i<=total; i++)
+        cin>>arr[i];
+    init(1,1,total);
+    // for(ll i=1;i<=3*total;i++)cout<<tree[i]<<" ";
+    //cout<<endl;
+    cin>>cnt;
+    ll idx,val;
+    while(cnt--)
+    {
+        cin>>idx>>val;
+        ll temp=query(1,1,total,1,idx);
+        cout<<temp<<endl;
+        update(1,1,total,1,idx,val+temp);
+    }
+}
